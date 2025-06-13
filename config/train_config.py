@@ -19,7 +19,7 @@ class TrainConfig:
     agent_save_dir: str = ''
 
     # Ablation flags
-    wo_pretrain: bool = False
+    wo_pretrain: bool = True
     wo_attnlob: bool = False
     wo_lob_state: bool = False
     wo_market_state: bool = False
