@@ -5,15 +5,12 @@ def get_ppo_agent(model, environment, max_episode_timesteps, device='cpu', learn
     return PPOAgent(
         states=environment.states,
         actions=environment.actions,
-        max_episode_timesteps=max_episode_timesteps,
-        network=model,
-        #update_mode=dict(unit='episodes', batch_size=10),
-        optimizer=dict(optimizer='adam', learning_rate=learning_rate),
-        objective='policy_gradient',
-        reward_estimation=dict(horizon=horizon),
-        exploration=0.1,
-        device=device
-    )
+        network='auto',
+        batch_size=10,
+        learning_rate=1e-3,
+        update_frequency=10,
+        max_episode_timesteps=2000
+        )
 
 def get_dueling_dqn_agent(model, environment, max_episode_timesteps, device='cpu', learning_rate=1e-4, horizon=1):
     return DQNAgent(
