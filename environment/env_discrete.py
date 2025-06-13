@@ -1,84 +1,109 @@
+# env_discrete.py
 import numpy as np
 import os
-import pandas as pd
-from gym import Env
-from gym.spaces import Discrete, Box
+import gym
+from gym import spaces
 
-
-class EnvDiscrete(Env):
-    def __init__(self, code, day, latency, T=50, wo_lob_state=False, wo_market_state=False,
-                 wo_dampened_pnl=False, wo_matched_pnl=False, wo_inv_punish=False,
+class EnvDiscrete(gym.Env):
+    def __init__(self, code, day, latency=1, T=50,
+                 wo_lob_state=False, wo_market_state=False,
+                 wo_dampened_pnl=False, wo_matched_pnl=False,
+                 wo_inv_punish=False,
                  experiment_name='', log=False):
+
+        super(EnvDiscrete, self).__init__()
 
         self.code = code
         self.day = day
-        self.T = T
         self.latency = latency
+        self.T = T
         self.log = log
-
-        self.episode_idx = 0
         self.wo_lob_state = wo_lob_state
         self.wo_market_state = wo_market_state
         self.wo_dampened_pnl = wo_dampened_pnl
         self.wo_matched_pnl = wo_matched_pnl
         self.wo_inv_punish = wo_inv_punish
+        self.experiment_name = experiment_name
 
-        # Load processed data
-        npz = np.load(f'./processed/{day}.npz')
-        self.lob = npz['lob']
-        self.market = npz['market']
+        self.episode_idx = 0
+        self.timesteps_per_episode = 2000
 
-        # Define discrete action space: [hold, buy, sell]
-        self.action_space = Discrete(3)
+        # Load data from preprocessed .npz file
+        self.data_path = f'./processed/{day}.npz'
+        data = np.load(self.data_path)
+        self.lob_data = data['lob']
+        self.market_data = data['market']
 
-        # State space is flattened LOB + market info
-        lob_shape = self.lob.shape[1:] if not self.wo_lob_state else (0, 15 * 4)
-        market_shape = self.market.shape[1:] if not self.wo_market_state else (0,)
-        obs_dim = np.prod(lob_shape) + np.prod(market_shape)
-        self.observation_space = Box(low=-np.inf, high=np.inf, shape=(obs_dim,), dtype=np.float32)
+        self.max_episode = len(self.lob_data) // self.timesteps_per_episode
 
-        self.reset()
+        # Action space: discrete values (e.g., Buy, Sell, Hold)
+        self.action_space = spaces.Discrete(3)
+
+        # Observation space: flatten lob + market features
+        lob_shape = self.lob_data[0].shape  # (T, features)
+        market_shape = self.market_data[0].shape  # (features,)
+
+        obs_dim = 0
+        if not self.wo_lob_state:
+            obs_dim += lob_shape[0] * lob_shape[1]
+        if not self.wo_market_state:
+            obs_dim += market_shape[0]
+
+        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(obs_dim,), dtype=np.float32)
+
+        self.current_step = 0
+        self.reset_seq(self.timesteps_per_episode, self.episode_idx)
 
     def reset_seq(self, timesteps_per_episode, episode_idx):
-        self.timestep = 0
-        self.episode_idx = episode_idx
         self.timesteps_per_episode = timesteps_per_episode
-        self.start = episode_idx * timesteps_per_episode
+        self.episode_idx = episode_idx
+        self.current_step = 0
+
+        start = episode_idx * timesteps_per_episode
+        end = (episode_idx + 1) * timesteps_per_episode
+
+        self.lob_episode = self.lob_data[start:end]
+        self.market_episode = self.market_data[start:end]
+
         return self._get_obs()
 
     def reset(self):
-        self.timestep = 0
-        self.start = 0
-        return self._get_obs()
+        return self.reset_seq(self.timesteps_per_episode, self.episode_idx)
 
     def _get_obs(self):
-        idx = self.start + self.timestep
-        lob_state = self.lob[idx].flatten() if not self.wo_lob_state else np.array([])
-        market_state = self.market[idx] if not self.wo_market_state else np.array([])
-        obs = np.concatenate([lob_state, market_state])
+        obs_parts = []
+        if not self.wo_lob_state:
+            obs_parts.append(self.lob_episode[self.current_step].flatten())
+        if not self.wo_market_state:
+            obs_parts.append(self.market_episode[self.current_step])
+        obs = np.concatenate(obs_parts)
         return obs.astype(np.float32)
 
     def execute(self, actions):
-        # Action: 0 = hold, 1 = buy, 2 = sell
-        reward = 0
-        done = False
-        self.timestep += 1
-        next_obs = self._get_obs()
+        reward = self._compute_reward(actions)
 
-        if self.timestep >= self.timesteps_per_episode:
-            done = True
+        self.current_step += 1
+        terminal = self.current_step >= self.timesteps_per_episode
+        next_state = self._get_obs() if not terminal else np.zeros_like(self._get_obs())
 
-        # Dummy reward logic (to be replaced with your logic)
-        reward = np.random.randn()
+        return next_state, terminal, reward
 
-        return next_obs, done, reward
+    def _compute_reward(self, action):
+        # Simplified reward: +1 for Buy, -1 for Sell, 0 for Hold
+        # Replace with custom reward logic
+        if action == 0:  # Buy
+            return 1.0
+        elif action == 1:  # Sell
+            return -1.0
+        else:  # Hold
+            return 0.0
 
     def get_final_result(self):
-        # Dummy metrics, to be replaced with real evaluation logic
+        # Dummy implementation — replace with actual result computation
         return {
-            'pnl': np.random.uniform(0, 1),
-            'nd_pnl': np.random.uniform(0, 1),
-            'avg_abs_position': np.random.uniform(0, 1),
-            'profit_ratio': np.random.uniform(0, 1),
-            'volume': np.random.uniform(0, 1)
+            'pnl': 0,
+            'nd_pnl': 0,
+            'avg_abs_position': 0,
+            'profit_ratio': 1,
+            'volume': 1,
         }
