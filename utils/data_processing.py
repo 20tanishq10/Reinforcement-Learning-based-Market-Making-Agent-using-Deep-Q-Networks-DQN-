@@ -9,14 +9,13 @@ LOB_DEPTH = 10  # configurable
 
 def load_orderbook_data(orderbook_path):
     df = pd.read_csv(orderbook_path)
-    df['minute'] = pd.to_datetime(df['minute'])
+    df['minute'] = pd.to_datetime(df['minute'], format="%d-%m-%Y %H:%M")
     df['date'] = df['minute'].dt.strftime('%Y%m%d')
     return df
 
-
 def load_trade_data(trade_path):
     df = pd.read_csv(trade_path)
-    df['minute'] = pd.to_datetime(df['minute'])
+    df['minute'] = pd.to_datetime(df['minute'], format="%d-%m-%Y %H:%M")
     df['date'] = df['minute'].dt.strftime('%Y%m%d')
     return df
 
