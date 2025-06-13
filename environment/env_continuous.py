@@ -54,13 +54,23 @@ class EnvContinuous(Env):
         market_features = self.trade[self.current_step]      # Already a 1D array with 5 elements
 
 
-        state = []
-        if not self.wo_lob_state:
-            state.extend(lob_values)
-        if not self.wo_market_state:
-            state.extend(market_features)
+        components = []
 
-        return np.array(state, dtype=np.float32)
+        if not self.wo_lob_state:
+            lob_values = np.array(self.orderbook[self.current_step][:20], dtype=np.float32).flatten()
+            components.append(lob_values)
+
+        if not self.wo_market_state:
+            market_features = np.array(self.trade[self.current_step], dtype=np.float32).flatten()
+            components.append(market_features)
+
+        if len(components) == 0:
+            raise ValueError("Both wo_lob_state and wo_market_state are True — empty state.")
+
+        state = np.concatenate(components)
+        return state
+
+
 
     def reset(self):
         self.inventory = 0
