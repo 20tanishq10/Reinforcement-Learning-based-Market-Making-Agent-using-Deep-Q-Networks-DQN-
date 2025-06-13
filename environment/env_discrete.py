@@ -100,14 +100,11 @@ class EnvDiscrete(gym.Env):
 
     @property
     def states(self):
-        return {
-             'type': 'float',
-             'shape': self.observation_space.shape
-        }
+        return dict(type='float', shape=self.observation_space.shape)
 
     @property
     def actions(self):
-        return self.action_space.n
+        return dict(type='int', num_actions=self.action_space.n)
 
     def get_final_result(self):
         # Dummy implementation — replace with actual result computation
