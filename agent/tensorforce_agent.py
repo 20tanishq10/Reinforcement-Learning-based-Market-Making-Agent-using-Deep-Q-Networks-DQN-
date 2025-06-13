@@ -3,7 +3,7 @@ from tensorforce.agents import PPOAgent, DQNAgent
 
 def get_ppo_agent(model, environment, max_episode_timesteps, device='cpu', learning_rate=1e-4, horizon=1):
     return PPOAgent(
-        states=environment.states(),
+        states=environment.states,
         actions=environment.actions(),
         max_episode_timesteps=max_episode_timesteps,
         network=model,
@@ -17,7 +17,7 @@ def get_ppo_agent(model, environment, max_episode_timesteps, device='cpu', learn
 
 def get_dueling_dqn_agent(model, environment, max_episode_timesteps, device='cpu', learning_rate=1e-4, horizon=1):
     return DQNAgent(
-        states=environment.states(),
+        states=environment.states,
         actions=environment.actions(),
         max_episode_timesteps=max_episode_timesteps,
         network=model,
