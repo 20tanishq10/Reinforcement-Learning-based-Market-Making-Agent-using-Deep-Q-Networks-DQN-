@@ -89,6 +89,14 @@ class EnvContinuous(Env):
 
         return self._get_state(), terminal, reward
 
+    @property
+    def states(self):
+        return dict(type='float', shape=self.observation_space.shape)
+
+    @property
+    def actions(self):
+        return dict(type='float', shape=self.action_space.shape)
+
     def get_final_result(self):
         return {
             'pnl': self.pnl,
