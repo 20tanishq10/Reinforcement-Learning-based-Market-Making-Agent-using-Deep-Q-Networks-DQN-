@@ -24,8 +24,12 @@ class EnvContinuous(Env):
         self.experiment_name = experiment_name
         self.log = log
 
-        self.orderbook = load_orderbook_data(f"data/orderbook/{code}_{day}.csv")
-        self.trade = load_trade_data(f"data/trades/{code}_{day}.csv")
+        #self.orderbook = load_orderbook_data(f"data/orderbook/{code}_{day}.csv")
+        #self.trade = load_trade_data(f"data/trades/{code}_{day}.csv")
+        data = np.load(f"./processed/{day}.npz")
+        self.orderbook = data['lob']         # shape (N, 40)
+        self.trade = data['market']          # shape (N, 5)
+
 
         self.max_position = 100
         self.inventory = 0
@@ -41,10 +45,14 @@ class EnvContinuous(Env):
 
     def _get_state(self):
         # Slice LOB state (bids/asks with depth=10) and normalize
-        lob_features = self.orderbook.iloc[self.current_step]
-        lob_values = lob_features.filter(regex='bids_|asks_').values[:20]  # 10 each
+        #lob_features = self.orderbook.iloc[self.current_step]
+        #lob_values = lob_features.filter(regex='bids_|asks_').values[:20]  # 10 each
 
-        market_features = self.trade.iloc[self.current_step][['Volume', 'Open', 'High', 'Low', 'Close']].values
+        #market_features = self.trade.iloc[self.current_step][['Volume', 'Open', 'High', 'Low', 'Close']].values
+
+        lob_values = self.orderbook[self.current_step][:20]  # First 20: 10 bids + 10 asks
+        market_features = self.trade[self.current_step]      # Already a 1D array with 5 elements
+
 
         state = []
         if not self.wo_lob_state:
