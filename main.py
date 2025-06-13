@@ -6,7 +6,7 @@ from dataclasses import asdict
 from tensorflow import keras
 import pyrallis
 from config import TrainConfig
-from environment.env_discrete import EnvDiscrete
+#from environment.env_discrete import EnvDiscrete
 from environment.env_continuous import EnvContinuous
 from agent.tensorforce_agent import get_dueling_dqn_agent, get_ppo_agent
 from network.network import get_model, get_lob_model, get_fclob_model, get_pretrain_model, compute_output_shape
