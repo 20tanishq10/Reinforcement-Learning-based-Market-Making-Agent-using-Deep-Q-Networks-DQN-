@@ -4,5 +4,5 @@ scikit-learn
 tensorflow
 gym
 pyyaml
-pyrlallis
+pyrallis
 tensorforce
