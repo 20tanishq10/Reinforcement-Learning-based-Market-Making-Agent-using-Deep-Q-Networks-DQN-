@@ -19,7 +19,7 @@ n_train_loop = 5
 keras_model_dir = './keras_model'
 
 def init_env(day, config):
-    env_cls = EnvContinuous if config['env_type'] == 'continuous' else EnvDiscrete
+    env_cls = EnvContinuous #if config['env_type'] == 'continuous' else EnvDiscrete
     return env_cls(
         code=config['code'],
         day=day,
