@@ -1,18 +1,17 @@
 from tensorforce import Agent
 
-def get_ppo_agent(model, environment, max_episode_timesteps, device='cpu', learning_rate=1e-4, horizon=1):
+def get_ppo_agent(environment, network, device='CPU', **kwargs):
     return Agent.create(
         agent='ppo',
         environment=environment,
-        max_episode_timesteps=max_episode_timesteps,
-        config=dict(
-            network=model,
-            batch_size=10,
-            update_frequency=10,
-            learning_rate=learning_rate,
-            device=device
-        )
+        network=network,
+        batch_size=64,
+        update_frequency=2,
+        learning_rate=kwargs.get('learning_rate', 1e-4),
+        horizon=kwargs.get('horizon', 200),
+        device=device
     )
+
 
 def get_dueling_dqn_agent(environment, device='CPU', **kwargs):
     network_spec = [
