@@ -73,6 +73,10 @@ def init_agent(env, config):
         agent.restore(config['agent_load_dir'], filename='cppo', format='numpy')
 
     return agent
+    print(agent.states)
+    print(agent.actions)
+    print(agent)
+
 
 def train_a_day(env, agent, train_result):
     num_episodes = len(env.orderbook) // num_step_per_episode
