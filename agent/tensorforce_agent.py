@@ -13,13 +13,20 @@ def get_ppo_agent(model, environment, max_episode_timesteps, device='cpu', learn
         )
 
 def get_dueling_dqn_agent(model, environment, max_episode_timesteps, device='cpu', learning_rate=1e-4, horizon=1):
-    return DQNAgent(
-        states=environment.states,
-        actions=environment.actions,
-        network=model,
-        memory=10000,
-        max_episode_timesteps=max_episode_timesteps,
-        exploration=0.1,
-        optimizer=dict(type='adam', learning_rate=learning_rate),
-        device=device
+    config = {
+        "agent": "dqn",
+        "network": model,  # or 'auto'
+        "memory": 10000,
+        "update_frequency": 1,
+        "learning_rate": learning_rate,
+        "exploration": 0.1,
+        "batch_size": 32,
+        "target_update_frequency": 100,
+        "max_episode_timesteps": max_episode_timesteps,
+        "device": device
+    }
+
+    return Agent.create(
+        config=config,
+        environment=environment
     )
