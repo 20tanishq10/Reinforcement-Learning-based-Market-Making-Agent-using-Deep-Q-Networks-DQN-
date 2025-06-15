@@ -26,4 +26,18 @@ def get_dueling_dqn_agent(model, environment, max_episode_timesteps, device='cpu
         "max_episode_timesteps": max_episode_timesteps,
         "device": device
     }
-    return Agent.create(config=config, environment=environment)
+
+    return Agent.create(
+        agent=config["agent"],
+        states=environment.states,     # ✅ use attributes, not full env
+        actions=environment.actions,
+        network=model,
+        memory=config["memory"],
+        update_frequency=config["update_frequency"],
+        learning_rate=config["learning_rate"],
+        exploration=config["exploration"],
+        batch_size=config["batch_size"],
+        target_update_frequency=config["target_update_frequency"],
+        max_episode_timesteps=config["max_episode_timesteps"],
+        device=config["device"]
+    )
