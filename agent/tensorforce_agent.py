@@ -5,11 +5,12 @@ def get_ppo_agent(environment, network, device='CPU', **kwargs):
         agent='ppo',
         environment=environment,
         network=network,
-        batch_size=64,
+        batch_size=10,
+        learning_rate=1e-4,
         update_frequency=2,
-        learning_rate=kwargs.get('learning_rate', 1e-4),
-        horizon=kwargs.get('horizon', 200),
-        device=device
+        max_episode_timesteps=1000,
+        device=device,
+        **kwargs
     )
 
 
