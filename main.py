@@ -64,12 +64,12 @@ def init_agent(env, config):
         with_lob_state=not config['wo_lob_state'],
         with_market_state=not config['wo_market_state']
     )
-    agent = get_agent(model, environment=env, max_episode_timesteps=1000, device=config['device'], **kwargs)
+    agent = get_agent(environment=env, network=model,max_episode_timesteps=1000, device=config['device'], **kwargs)
 
     if config['load']:
         model = keras.models.load_model(keras_model_dir)
         model.layers[0].compute_output_shape = compute_output_shape
-        agent = get_agent(model, environment=env, max_episode_timesteps=1000, device=config['device'], **kwargs)
+        agent = get_agent(environment=env, network=model,max_episode_timesteps=1000, device=config['device'], **kwargs)
         agent.restore(config['agent_load_dir'], filename='cppo', format='numpy')
 
     return agent
