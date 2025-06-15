@@ -40,43 +40,20 @@ def init_env(day, config):
     return Environment.create(environment=gym_env)
 
 def init_agent(env, config):
-    kwargs = {
-        'learning_rate': config['learning_rate'],
-        'horizon': config['horizon']
-    }
-    get_agent = get_ppo_agent if config['agent_type'] == 'ppo' else get_dueling_dqn_agent
+    # Define or import your network spec
+    network = [
+        dict(type='dense', size=64, activation='relu'),
+        dict(type='dense', size=64, activation='relu')
+    ]
 
-    if config['wo_pretrain']:
-        lob_model = get_lob_model(64, config['time_window'])
-        lob_model.compute_output_shape = compute_output_shape
-    else:
-        base_model = get_lob_model(64, config['time_window'])
-        model_pretrain = get_pretrain_model(base_model, config['time_window'])
-        model_pretrain.load_weights(f'./ckpt/pretrain_model_{config["code"]}/weights')
-        lob_model = model_pretrain.layers[0]
-
-    if config['wo_attnlob']:
-        lob_model = get_fclob_model(64, config['time_window'])
-
-    model = get_model(
-        lob_model,
-        config['time_window'],
-        with_lob_state=not config['wo_lob_state'],
-        with_market_state=not config['wo_market_state']
+    agent = get_ppo_agent(
+        environment=env,
+        network=network,
+        device=config['device'],
+        learning_rate=1e-4,
+        horizon=200
     )
-    agent = get_agent(environment=env, max_episode_timesteps=1000, device=config['device'], **kwargs)
-
-    if config['load']:
-        model = keras.models.load_model(keras_model_dir)
-        model.layers[0].compute_output_shape = compute_output_shape
-        agent = get_agent(environment=env, max_episode_timesteps=1000, device=config['device'], **kwargs)
-        agent.restore(config['agent_load_dir'], filename='cppo', format='numpy')
-
     return agent
-    print(agent.states)
-    print(agent.actions)
-    print(agent)
-
 
 def train_a_day(env, agent, train_result):
     num_episodes = len(env.orderbook) // num_step_per_episode
