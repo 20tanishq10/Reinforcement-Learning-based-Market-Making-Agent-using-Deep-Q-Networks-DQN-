@@ -50,7 +50,7 @@ def init_agent(env, config):
         environment=env,
         network=network,
         device=config['device'],
-        learning_rate=1e-4,
+       # learning_rate=1e-4,
        # horizon=200
     )
     return agent
