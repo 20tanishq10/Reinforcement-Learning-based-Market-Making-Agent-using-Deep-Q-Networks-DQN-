@@ -14,16 +14,19 @@ def get_ppo_agent(model, environment, max_episode_timesteps, device='cpu', learn
         )
     )
 
-def get_dueling_dqn_agent(model, environment, device='CPU', **kwargs):
+def get_dueling_dqn_agent(environment, device='CPU', **kwargs):
     return Agent.create(
         agent='dueling_dqn',
         environment=environment,
         memory=10000,
         batch_size=64,
-        network=model,
-        device=device,
         update_frequency=1,
         target_update_weight=0.05,
         start_updating=1000,
+        network=[
+            dict(type='dense', size=128, activation='relu'),
+            dict(type='dense', size=128, activation='relu')
+        ],
+        device=device,
         **kwargs
     )
