@@ -11,6 +11,9 @@ from environment.env_continuous import EnvContinuous
 from agent.tensorforce_agent import get_dueling_dqn_agent, get_ppo_agent
 from network.network import get_model, get_lob_model, get_fclob_model, get_pretrain_model, compute_output_shape
 
+from tensorforce.environments import Environment
+from environment.env_continuous import EnvContinuous
+
 train_days = ['20210407', '20210408', '20210409', '20210410' ,'20210411', '20210412'
  '20210413' ,'20210414', '20210415', '20210416']
 test_days = ['20210417', '20210418', '20210419']
@@ -20,7 +23,7 @@ keras_model_dir = './keras_model'
 
 def init_env(day, config):
     env_cls = EnvContinuous #if config['env_type'] == 'continuous' else EnvDiscrete
-    return env_cls(
+    gym_env = env_cls(
         code=config['code'],
         day=day,
         latency=config['latency'],
@@ -33,6 +36,8 @@ def init_env(day, config):
         experiment_name=config['exp_name'],
         log=config['log']
     )
+    # ✅ Wrap it here
+    return Environment.create(environment=gym_env)
 
 def init_agent(env, config):
     kwargs = {
