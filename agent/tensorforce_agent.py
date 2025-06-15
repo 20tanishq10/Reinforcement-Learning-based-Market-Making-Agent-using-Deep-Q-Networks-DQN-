@@ -1,4 +1,5 @@
 # tensorforce_agent.py
+from tensorforce import Agent
 from tensorforce.agents import PPOAgent, DQNAgent
 
 def get_ppo_agent(model, environment, max_episode_timesteps, device='cpu', learning_rate=1e-4, horizon=1):
